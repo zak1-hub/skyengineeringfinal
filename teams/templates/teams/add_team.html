@@ -1,0 +1,126 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Register Team | Sky Engineering</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+    <style>
+        :root { 
+            --sky-blue: #00b5e2; 
+            --navy-sidebar: #102a43; 
+            --content-bg: #f0f4f8;
+            --border-color: #dbe3eb;
+        }
+        body { background: var(--content-bg); display: flex; min-height: 100vh; font-family: 'Segoe UI', sans-serif; margin: 0; }
+        
+        /* Sidebar Styling (Matches Registry) */
+        .sidebar { width: 260px; background: var(--navy-sidebar); color: #fff; position: fixed; height: 100%; z-index: 100; }
+        .sidebar-brand { padding: 1.5rem; color: var(--sky-blue); font-weight: bold; display: flex; align-items: center; gap: 10px; font-size: 1.2rem; }
+        .sidebar-label { padding: 1.2rem 1.5rem 0.5rem; text-transform: uppercase; font-size: 0.7rem; color: rgba(255,255,255,0.4); font-weight: bold; letter-spacing: 1px; }
+        .nav-link { color: rgba(255,255,255,0.8); padding: 0.8rem 1.5rem; display: flex; align-items: center; text-decoration: none; transition: 0.2s; border-left: 4px solid transparent; }
+        .nav-link:hover { background: rgba(255,255,255,0.05); color: #fff; }
+        .nav-link.active { background: rgba(0, 181, 226, 0.15); color: #fff; border-left: 4px solid var(--sky-blue); }
+
+        /* Main Content Styling */
+        .main-content { margin-left: 260px; padding: 2rem; width: calc(100% - 260px); }
+        
+        .content-header { 
+            background: #fff; 
+            padding: 1rem 1.5rem; 
+            border-radius: 10px; 
+            border: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .form-card { 
+            background: #fff; 
+            border-radius: 10px; 
+            border: 1px solid var(--border-color); 
+            padding: 2.5rem;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.02);
+        }
+        .form-section-title { 
+            font-size: 1.1rem; 
+            font-weight: 700; 
+            color: var(--navy-sidebar); 
+            margin-bottom: 1.5rem; 
+            padding-bottom: 0.5rem;
+            border-bottom: 2px solid var(--sky-blue);
+            display: inline-block;
+        }
+        .form-label { font-weight: 600; color: #475569; font-size: 0.85rem; margin-bottom: 0.4rem; }
+        .form-control { border: 1px solid #cbd5e1; border-radius: 6px; padding: 0.6rem; }
+        .form-control:focus { border-color: var(--sky-blue); box-shadow: 0 0 0 0.25rem rgba(0, 181, 226, 0.1); }
+    </style>
+</head>
+<body>
+
+    <nav class="sidebar p-0">
+        <div class="sidebar-brand"><i class="bi bi-broadcast"></i> Sky Engineering</div>
+        
+        <div class="sidebar-label">MAIN</div>
+        <div class="nav flex-column">
+            <a href="/teams/" class="nav-link"><i class="bi bi-people-fill me-3"></i> Team Registry</a>
+            <a href="/departments/" class="nav-link"><i class="bi bi-diagram-3-fill me-3"></i> Departments</a>
+            <a href="/organisation/" class="nav-link"><i class="bi bi-bank2 me-3"></i> Organisation</a>
+            <a href="/messages/" class="nav-link"><i class="bi bi-chat-dots me-3"></i> Messages</a>
+        </div>
+
+        <div class="sidebar-label">SCHEDULE</div>
+        <div class="nav flex-column">
+            <a href="/schedule/upcoming/" class="nav-link"><i class="bi bi-calendar3 me-3"></i> Upcoming</a>
+            <a href="/schedule/weekly/" class="nav-link"><i class="bi bi-calendar3-range me-3"></i> Weekly</a>
+            <a href="/schedule/monthly/" class="nav-link"><i class="bi bi-calendar3-event me-3"></i> Monthly</a>
+            <a href="/schedule/new/" class="nav-link"><i class="bi bi-plus-circle me-3"></i> New Meeting</a>
+        </div>
+    </nav>
+
+    <div class="main-content">
+        
+        <div class="content-header">
+            <h4 class="mb-0 fw-bold d-flex align-items-center">
+                <i class="bi bi-plus-circle-fill text-muted me-3"></i> Register New Team
+            </h4>
+            <a href="/teams/" class="btn btn-outline-secondary btn-sm">
+                <i class="bi bi-arrow-left me-1"></i> Back to Registry
+            </a>
+        </div>
+
+        <div class="container-fluid p-0" style="max-width: 900px; margin-left: 0;">
+            <div class="form-card">
+                <div class="form-section-title">Team Identification & Dependencies</div>
+                
+                <form method="POST">
+                    {% csrf_token %}
+                    <div class="row g-4">
+                        {% for field in form %}
+                        <div class="{% if field.name == 'mission' or field.name == 'skills' %}col-12{% else %}col-md-6{% endif %}">
+                            <label class="form-label text-uppercase small">{{ field.label }}</label>
+                            {{ field }}
+                            {% if field.help_text %}
+                                <div class="form-text small">{{ field.help_text }}</div>
+                            {% endif %}
+                        </div>
+                        {% endfor %}
+                    </div>
+                    
+                    <div class="mt-5 pt-4 border-top">
+                        <button type="submit" class="btn btn-primary px-5 py-2 fw-bold">
+                            Save Team to Registry
+                        </button>
+                        <button type="reset" class="btn btn-link text-muted px-4 text-decoration-none">Reset Form</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

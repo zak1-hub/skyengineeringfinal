@@ -1,0 +1,128 @@
+{% extends 'schedule/base_schedule.html' %}
+{% load schedule_extras %}
+{% block title %}Monthly Schedule{% endblock %}
+
+{% block extra_css %}
+<style>
+  .cal-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 2px;
+    background: #dee2e6;
+    border-radius: 10px;
+    overflow: hidden;
+  }
+  .cal-header-cell {
+    background: var(--sky-dark);
+    color: #fff;
+    text-align: center;
+    padding: .5rem 0;
+    font-size: .82rem;
+    font-weight: 600;
+  }
+  .cal-cell {
+    background: #fff;
+    min-height: 100px;
+    padding: .4rem;
+    vertical-align: top;
+    position: relative;
+  }
+  .cal-cell.empty  { background: #f8f9fa; }
+  .cal-cell.today  { background: #e8f7fc; }
+  .cal-day-num {
+    font-size: .85rem;
+    font-weight: 700;
+    color: var(--sky-dark);
+    display: inline-block;
+    width: 26px;
+    height: 26px;
+    line-height: 26px;
+    text-align: center;
+    border-radius: 50%;
+  }
+  .cal-cell.today .cal-day-num {
+    background: var(--sky-blue);
+    color: #fff;
+  }
+  .cal-event {
+    background: var(--sky-blue);
+    color: #fff;
+    border-radius: 4px;
+    padding: 1px 5px;
+    font-size: .72rem;
+    margin-top: 3px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: block;
+    text-decoration: none;
+  }
+  .cal-event:hover { background: var(--sky-dark); color: #fff; }
+  .cal-event.cancelled { background: #ccc; color: #555; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="top-bar">
+  <h1><i class="bi bi-calendar3 me-2" style="color:var(--sky-blue)"></i>Monthly View</h1>
+  <a href="{% url 'schedule:create' %}" class="btn btn-primary btn-sm">
+    <i class="bi bi-plus-lg me-1"></i> New Meeting
+  </a>
+</div>
+
+<!-- Navigation -->
+<div class="d-flex align-items-center justify-content-between mb-4">
+  <div class="btn-group">
+    <a href="{% url 'schedule:home' %}"    class="btn btn-sky">Upcoming</a>
+    <a href="{% url 'schedule:weekly' %}"  class="btn btn-sky">Weekly</a>
+    <a href="{% url 'schedule:monthly' %}" class="btn btn-sky active">Monthly</a>
+  </div>
+  <div class="d-flex align-items-center gap-3">
+    <a href="?month_offset={{ prev_offset }}" class="btn btn-outline-secondary btn-sm">
+      <i class="bi bi-chevron-left"></i>
+    </a>
+    <span class="fw-semibold fs-5">{{ month_name }}</span>
+    <a href="?month_offset={{ next_offset }}" class="btn btn-outline-secondary btn-sm">
+      <i class="bi bi-chevron-right"></i>
+    </a>
+    <a href="?month_offset=0" class="btn btn-sm btn-outline-primary">Today</a>
+  </div>
+</div>
+
+<style>
+  .btn-sky { background:#fff; border:1px solid var(--sky-blue); color:var(--sky-dark); }
+  .btn-sky.active { background:var(--sky-blue); color:#fff; }
+  .btn-sky:hover { background:var(--sky-blue); color:#fff; }
+</style>
+
+<div class="cal-grid">
+  <!-- Day headers -->
+{% for day_name in day_names %}
+  <div class="cal-header-cell">{{ day_name }}</div>
+{% endfor %}
+
+  <!-- Weeks -->
+  {% for week in cal %}
+    {% for day in week %}
+      {% if day == 0 %}
+        <div class="cal-cell empty"></div>
+      {% else %}
+        <div class="cal-cell {% if day == today.day and month == today.month and year == today.year %}today{% endif %}">
+          <span class="cal-day-num">{{ day }}</span>
+          {% with day_meetings=meetings_by_day|get_item:day %}
+            {% if day_meetings %}
+              {% for m in day_meetings %}
+                <a href="{% url 'schedule:detail' m.pk %}"
+                   class="cal-event {% if m.status == 'cancelled' %}cancelled{% endif %}"
+                   title="{{ m.title }} – {{ m.date_time|time:'H:i' }}">
+                  {{ m.date_time|time:"H:i" }} {{ m.title|truncatechars:14 }}
+                </a>
+              {% endfor %}
+            {% endif %}
+          {% endwith %}
+        </div>
+      {% endif %}
+    {% endfor %}
+  {% endfor %}
+</div>
+{% endblock %}

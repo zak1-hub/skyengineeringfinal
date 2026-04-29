@@ -1,0 +1,100 @@
+{% extends 'messaging/base_messaging.html' %}
+{% block title %}{{ message.subject }}{% endblock %}
+
+{% block content %}
+<div class="top-bar">
+  <h1>
+    <i class="bi bi-envelope-open me-2" style="color:var(--sky-blue)"></i>
+    {{ message.subject|truncatechars:60 }}
+  </h1>
+  <div class="d-flex gap-2">
+    <a href="{% url 'messaging:reply' message.pk %}" class="btn btn-primary btn-sm">
+      <i class="bi bi-reply me-1"></i> Reply
+    </a>
+    <a href="{% url 'messaging:inbox' %}" class="btn btn-outline-secondary btn-sm">
+      <i class="bi bi-arrow-left me-1"></i> Back
+    </a>
+  </div>
+</div>
+
+<!-- Thread -->
+<div class="card mb-4">
+  <div class="card-header d-flex align-items-center gap-2">
+    <i class="bi bi-chat-dots" style="color:var(--sky-blue)"></i>
+    Conversation{% if thread|length > 1 %} ({{ thread|length }} messages){% endif %}
+  </div>
+  <div class="card-body">
+
+    {% for item in thread %}
+    <div class="thread-item {% if item.pk == message.pk %}current{% endif %} mb-4">
+
+      <!-- Message header -->
+      <div class="d-flex align-items-center mb-2 gap-3">
+        <!-- Avatar circle -->
+        <div style="width:38px;height:38px;border-radius:50%;background:var(--sky-{% if item.sender == request.user %}dark{% else %}blue{% endif %});
+                    color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:.95rem;flex-shrink:0;">
+          {{ item.sender.username|first|upper }}
+        </div>
+        <div>
+          <div class="fw-semibold" style="color:var(--sky-dark)">
+            {{ item.sender.get_full_name|default:item.sender.username }}
+            {% if item.sender == request.user %}
+              <span class="text-muted fw-normal">(you)</span>
+            {% endif %}
+          </div>
+          <div class="text-muted small">
+            To: {{ item.recipient.get_full_name|default:item.recipient.username|default:"—" }}
+            &nbsp;·&nbsp; {{ item.sent_at|date:"d M Y" }} at {{ item.sent_at|time:"H:i" }}
+          </div>
+        </div>
+        <div class="ms-auto d-flex gap-1">
+          {% if item.recipient == request.user %}
+            {% if item.is_read %}
+              <a href="{% url 'messaging:mark_unread' item.pk %}" class="btn btn-sm btn-outline-secondary" title="Mark unread">
+                <i class="bi bi-envelope"></i>
+              </a>
+            {% endif %}
+          {% endif %}
+          <a href="{% url 'messaging:delete' item.pk %}" class="btn btn-sm btn-outline-danger"
+             title="Delete" onclick="return confirm('Delete this message?')">
+            <i class="bi bi-trash"></i>
+          </a>
+        </div>
+      </div>
+
+      <!-- Message body -->
+      <div class="message-body ms-5">{{ item.body }}</div>
+
+    </div>
+    {% endfor %}
+
+  </div>
+</div>
+
+<!-- Quick reply -->
+<div class="card">
+  <div class="card-header d-flex align-items-center gap-2">
+    <i class="bi bi-reply" style="color:var(--sky-blue)"></i> Quick Reply
+  </div>
+  <div class="card-body">
+    <form method="post" action="{% url 'messaging:reply' message.pk %}">
+      {% csrf_token %}
+      <input type="hidden" name="recipient"
+             value="{{ message.sender.pk }}">
+      <input type="hidden" name="subject"
+             value="Re: {{ message.subject }}">
+      <textarea name="body" class="form-control mb-3" rows="4"
+                placeholder="Write your reply…" required></textarea>
+      <div class="d-flex gap-2">
+        <button type="submit" name="action" value="send" class="btn btn-primary">
+          <i class="bi bi-send me-1"></i> Send Reply
+        </button>
+        <a href="{% url 'messaging:reply' message.pk %}" class="btn btn-outline-secondary">
+          <i class="bi bi-arrows-angle-expand me-1"></i> Full Reply
+        </a>
+      </div>
+    </form>
+  </div>
+</div>
+
+{% endblock %}

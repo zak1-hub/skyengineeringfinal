@@ -1,0 +1,75 @@
+{% extends 'messaging/base_messaging.html' %}
+{% block title %}Sent{% endblock %}
+
+{% block content %}
+<div class="top-bar">
+  <h1><i class="bi bi-send me-2" style="color:var(--sky-blue)"></i>Sent</h1>
+  <a href="{% url 'messaging:compose' %}" class="btn btn-primary btn-sm">
+    <i class="bi bi-pencil-square me-1"></i> New Message
+  </a>
+</div>
+
+<div class="btn-group mb-4" role="group">
+  <a href="{% url 'messaging:inbox' %}"   class="btn btn-sky">
+    <i class="bi bi-inbox me-1"></i>Inbox
+    {% if unread_count %}<span class="badge bg-primary ms-1">{{ unread_count }}</span>{% endif %}
+  </a>
+  <a href="{% url 'messaging:sent' %}"    class="btn btn-sky active"><i class="bi bi-send me-1"></i>Sent</a>
+  <a href="{% url 'messaging:drafts' %}"  class="btn btn-sky"><i class="bi bi-file-earmark-text me-1"></i>Drafts</a>
+  <a href="{% url 'messaging:compose' %}" class="btn btn-sky"><i class="bi bi-pencil-square me-1"></i>Compose</a>
+</div>
+
+<div class="card">
+  <div class="card-header d-flex align-items-center gap-2">
+    <i class="bi bi-send" style="color:var(--sky-blue)"></i> Sent Messages
+    <span class="ms-auto badge bg-primary rounded-pill">{{ messages_list|length }}</span>
+  </div>
+  <div class="card-body p-0">
+    {% if messages_list %}
+    <table class="table table-hover mb-0">
+      <thead class="table-light">
+        <tr>
+          <th>To</th>
+          <th>Subject</th>
+          <th>Sent</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for msg in messages_list %}
+        <tr class="msg-row" onclick="window.location='{% url 'messaging:view' msg.pk %}'">
+          <td>
+            {{ msg.recipient.get_full_name|default:msg.recipient.username|default:"—" }}
+          </td>
+          <td class="msg-subject">
+            {{ msg.subject }}
+            {% if msg.parent %}
+              <span class="badge bg-secondary ms-1" style="font-size:.65rem">reply</span>
+            {% endif %}
+          </td>
+          <td class="text-muted small text-nowrap">
+            {{ msg.sent_at|date:"d M Y" }}<br>
+            <span style="font-size:.75rem">{{ msg.sent_at|time:"H:i" }}</span>
+          </td>
+          <td class="text-end" onclick="event.stopPropagation()">
+            <a href="{% url 'messaging:delete' msg.pk %}" class="btn btn-sm btn-outline-danger"
+               title="Delete" onclick="return confirm('Delete this message?')">
+              <i class="bi bi-trash"></i>
+            </a>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% else %}
+    <div class="text-center text-muted py-5">
+      <i class="bi bi-send fs-1 d-block mb-3" style="color:var(--sky-blue)"></i>
+      <p>No sent messages yet.</p>
+      <a href="{% url 'messaging:compose' %}" class="btn btn-primary">
+        <i class="bi bi-pencil-square me-1"></i> Send a Message
+      </a>
+    </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

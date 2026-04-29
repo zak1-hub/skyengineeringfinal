@@ -1,0 +1,51 @@
+{% extends 'organisation/base_organisation.html' %}
+{% block title %}{{ department.name }}{% endblock %}
+{% block content %}
+
+<div class="top-bar">
+    <h1><i class="bi bi-diagram-3 me-2" style="color:var(--sky-blue)"></i>{{ department.name }}</h1>
+    <a href="/organisation/departments/" class="btn btn-outline-secondary btn-sm">
+        <i class="bi bi-arrow-left me-1"></i> Back
+    </a>
+</div>
+
+<div class="row mb-4">
+    <div class="col-md-4">
+        <div class="card p-4">
+            <small class="text-muted text-uppercase">Specialisation</small>
+            <p class="fw-bold mb-0 mt-1">{{ department.specialisation }}</p>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card p-4">
+            <small class="text-muted text-uppercase">Department Leader</small>
+            <p class="fw-bold mb-0 mt-1">{{ department.leader|default:"Not assigned" }}</p>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card p-4">
+            <small class="text-muted text-uppercase">Total Teams</small>
+            <p class="fw-bold mb-0 mt-1">{{ teams.count }} Teams</p>
+        </div>
+    </div>
+</div>
+
+<h5 class="fw-bold mb-3">Teams in this Department</h5>
+<div class="row g-4">
+    {% for team in teams %}
+    <div class="col-md-4">
+        <div class="card h-100 p-4">
+            <h5 class="fw-bold">{{ team.name }}</h5>
+            <p class="text-muted small">{{ team.mission|default:"No mission statement yet." }}</p>
+            {% if team.manager %}
+            <p class="small text-secondary">👤 {{ team.manager }}</p>
+            {% endif %}
+            <a href="/organisation/team/{{ team.pk }}/" class="btn btn-primary mt-3 w-100">View Team →</a>
+        </div>
+    </div>
+    {% empty %}
+    <div class="col-12"><div class="alert alert-info">No teams in this department yet.</div></div>
+    {% endfor %}
+</div>
+
+{% endblock %}

@@ -1,0 +1,65 @@
+{% extends 'organisation/base_organisation.html' %}
+{% block title %}{{ team.name }}{% endblock %}
+{% block content %}
+
+<div class="top-bar">
+    <h1><i class="bi bi-people me-2" style="color:var(--sky-blue)"></i>{{ team.name }}</h1>
+    <a href="/organisation/teams/" class="btn btn-outline-secondary btn-sm">
+        <i class="bi bi-arrow-left me-1"></i> Back
+    </a>
+</div>
+
+<div class="row mb-4">
+    <div class="col-md-4">
+        <div class="card p-4">
+            <small class="text-muted text-uppercase">Manager</small>
+            <p class="fw-bold mb-0 mt-1">{{ team.manager|default:"Not assigned" }}</p>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card p-4">
+            <small class="text-muted text-uppercase">Team Type</small>
+            <p class="fw-bold mb-0 mt-1">{{ team.team_type|default:"Not specified" }}</p>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card p-4">
+            <small class="text-muted text-uppercase">Department</small>
+            <p class="fw-bold mb-0 mt-1">{{ team.department }}</p>
+        </div>
+    </div>
+</div>
+
+{% if team.mission %}
+<div class="card p-4 mb-4">
+    <small class="text-muted text-uppercase">Mission</small>
+    <p class="mt-2 mb-0">{{ team.mission }}</p>
+</div>
+{% endif %}
+
+<div class="row">
+    <div class="col-md-6">
+        <h5 class="fw-bold mb-3"><i class="bi bi-arrow-up-circle me-2" style="color:#1e8449"></i>Upstream Dependencies</h5>
+        {% for dep in upstream %}
+        <div class="card p-3 mb-2 d-flex flex-row align-items-center justify-content-between">
+            <span class="fw-semibold">{{ dep.to_team }}</span>
+            <span class="badge" style="background:#d4efdf;color:#1e8449;">Upstream</span>
+        </div>
+        {% empty %}
+        <div class="alert alert-light">No upstream dependencies</div>
+        {% endfor %}
+    </div>
+    <div class="col-md-6">
+        <h5 class="fw-bold mb-3"><i class="bi bi-arrow-down-circle me-2" style="color:#1a5276"></i>Downstream Dependencies</h5>
+        {% for dep in downstream %}
+        <div class="card p-3 mb-2 d-flex flex-row align-items-center justify-content-between">
+            <span class="fw-semibold">{{ dep.from_team }}</span>
+            <span class="badge" style="background:#d6eaf8;color:#1a5276;">Downstream</span>
+        </div>
+        {% empty %}
+        <div class="alert alert-light">No downstream dependencies</div>
+        {% endfor %}
+    </div>
+</div>
+
+{% endblock %}

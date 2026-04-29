@@ -1,0 +1,95 @@
+{% extends 'messaging/base_messaging.html' %}
+{% block title %}{% if draft_pk %}Edit Draft{% elif is_reply %}Reply{% else %}New Message{% endif %}{% endblock %}
+
+{% block content %}
+<div class="top-bar">
+  <h1>
+    <i class="bi bi-pencil-square me-2" style="color:var(--sky-blue)"></i>
+    {% if draft_pk %}Edit Draft{% elif is_reply %}Reply{% else %}New Message{% endif %}
+  </h1>
+  <a href="{% url 'messaging:inbox' %}" class="btn btn-outline-secondary btn-sm">
+    <i class="bi bi-arrow-left me-1"></i> Back to Inbox
+  </a>
+</div>
+
+{% if is_reply and original %}
+<div class="alert alert-light border-start border-3 mb-4" style="border-color:var(--sky-blue) !important">
+  <strong>Replying to:</strong> {{ original.subject }}
+  <span class="text-muted ms-2">from {{ original.sender.get_full_name|default:original.sender.username }}</span>
+</div>
+{% endif %}
+
+<div class="card">
+  <div class="card-header d-flex align-items-center gap-2">
+    <i class="bi bi-envelope-plus" style="color:var(--sky-blue)"></i>
+    {% if draft_pk %}Continue Draft{% elif is_reply %}Reply{% else %}Compose Message{% endif %}
+  </div>
+  <div class="card-body">
+    <form method="post" id="compose-form">
+      {% csrf_token %}
+
+      <!-- Recipient -->
+      <div class="mb-3">
+        <label class="form-label fw-semibold text-dark">
+          <i class="bi bi-person me-1" style="color:var(--sky-blue)"></i> To
+        </label>
+        {{ form.recipient }}
+        {% if form.recipient.errors %}
+          <div class="text-danger small mt-1">{{ form.recipient.errors.0 }}</div>
+        {% endif %}
+      </div>
+
+      <!-- Subject -->
+      <div class="mb-3">
+        <label class="form-label fw-semibold text-dark">
+          <i class="bi bi-chat-text me-1" style="color:var(--sky-blue)"></i> Subject
+        </label>
+        {{ form.subject }}
+        {% if form.subject.errors %}
+          <div class="text-danger small mt-1">{{ form.subject.errors.0 }}</div>
+        {% endif %}
+      </div>
+
+      <!-- Body -->
+      <div class="mb-4">
+        <label class="form-label fw-semibold text-dark">
+          <i class="bi bi-text-paragraph me-1" style="color:var(--sky-blue)"></i> Message
+        </label>
+        {{ form.body }}
+        {% if form.body.errors %}
+          <div class="text-danger small mt-1">{{ form.body.errors.0 }}</div>
+        {% endif %}
+      </div>
+
+      <!-- Actions -->
+      <div class="d-flex gap-2">
+        <button type="submit" name="action" value="send"
+                class="btn btn-primary px-4">
+          <i class="bi bi-send me-1"></i> Send
+        </button>
+        <button type="submit" name="action" value="draft"
+                class="btn btn-outline-secondary px-4">
+          <i class="bi bi-floppy me-1"></i> Save as Draft
+        </button>
+        <a href="{% if is_reply %}{% url 'messaging:view' original.pk %}{% else %}{% url 'messaging:inbox' %}{% endif %}"
+           class="btn btn-outline-danger ms-auto">
+          <i class="bi bi-x-lg me-1"></i> Discard
+        </a>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  // Auto-resize the textarea
+  const body = document.querySelector('textarea[name="body"]');
+  if (body) {
+    body.addEventListener('input', () => {
+      body.style.height = 'auto';
+      body.style.height = body.scrollHeight + 'px';
+    });
+  }
+</script>
+{% endblock %}

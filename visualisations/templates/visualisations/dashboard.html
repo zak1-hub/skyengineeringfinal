@@ -1,0 +1,485 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Data Visualisation | Sky Engineering</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.2/dist/chart.umd.min.js"></script>
+  <style>
+    :root {
+      --sky-blue:   #00b5e2;
+      --sky-dark:   #003057;
+      --sky-light:  #e8f7fc;
+      --sidebar-w:  240px;
+    }
+
+    body { background: #f4f6f9; font-family: 'Segoe UI', sans-serif; }
+
+    /* ── Sidebar ── */
+    .sidebar {
+      width: var(--sidebar-w);
+      min-height: 100vh;
+      background: var(--sky-dark);
+      color: #fff;
+      position: fixed;
+      top: 0; left: 0;
+      display: flex;
+      flex-direction: column;
+      z-index: 100;
+    }
+    .sidebar .brand {
+      padding: 1.25rem 1.5rem;
+      font-size: 1.1rem;
+      font-weight: 700;
+      border-bottom: 1px solid rgba(255,255,255,.15);
+      display: flex;
+      align-items: center;
+      gap: .6rem;
+      color: var(--sky-blue);
+      text-decoration: none;
+    }
+    .sidebar .nav-link {
+      color: rgba(255,255,255,.8);
+      padding: .65rem 1.5rem;
+      font-size: .93rem;
+      display: flex;
+      align-items: center;
+      gap: .6rem;
+      transition: background .15s, color .15s;
+      border-left: 3px solid transparent;
+    }
+    .sidebar .nav-link:hover,
+    .sidebar .nav-link.active {
+      background: rgba(255,255,255,.08);
+      color: #fff;
+      border-left-color: var(--sky-blue);
+    }
+    .sidebar .nav-section {
+      font-size: .72rem;
+      text-transform: uppercase;
+      letter-spacing: .08em;
+      color: rgba(255,255,255,.4);
+      padding: 1rem 1.5rem .3rem;
+    }
+
+    /* ── Main content ── */
+    .main-content {
+      margin-left: var(--sidebar-w);
+      padding: 2rem;
+      min-height: 100vh;
+    }
+
+    /* ── Top bar ── */
+    .top-bar {
+      background: #fff;
+      border-radius: 12px;
+      padding: .85rem 1.5rem;
+      margin-bottom: 1.75rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      box-shadow: 0 1px 4px rgba(0,0,0,.07);
+    }
+    .top-bar h1 { font-size: 1.35rem; font-weight: 700; color: var(--sky-dark); margin: 0; }
+
+    /* ── KPI Cards ── */
+    .kpi-card {
+      background: #fff;
+      border-radius: 12px;
+      padding: 1.25rem 1.5rem;
+      box-shadow: 0 1px 6px rgba(0,0,0,.07);
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      height: 100%;
+    }
+    .kpi-icon {
+      width: 52px; height: 52px;
+      border-radius: 12px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.5rem;
+      flex-shrink: 0;
+    }
+    .kpi-icon.blue   { background: var(--sky-light); color: var(--sky-blue); }
+    .kpi-icon.dark   { background: #e8edf2;          color: var(--sky-dark); }
+    .kpi-icon.green  { background: #d1f0da;          color: #1a7a3c; }
+    .kpi-icon.orange { background: #fff3e0;          color: #e65100; }
+    .kpi-value { font-size: 2rem; font-weight: 700; color: var(--sky-dark); line-height: 1; }
+    .kpi-label { font-size: .8rem; color: #6c757d; margin-top: .2rem; }
+
+    /* ── Chart Cards ── */
+    .chart-card {
+      background: #fff;
+      border-radius: 12px;
+      box-shadow: 0 1px 6px rgba(0,0,0,.08);
+      padding: 1.5rem;
+      height: 100%;
+    }
+    .chart-card-title {
+      font-size: 1rem;
+      font-weight: 700;
+      color: var(--sky-dark);
+      margin-bottom: 1.25rem;
+      display: flex;
+      align-items: center;
+      gap: .5rem;
+      border-bottom: 2px solid var(--sky-blue);
+      padding-bottom: .75rem;
+    }
+    .chart-card-title i { color: var(--sky-blue); }
+    .chart-wrapper { position: relative; }
+
+    /* ── Loading spinner ── */
+    .chart-loading {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 260px;
+      color: #adb5bd;
+      flex-direction: column;
+      gap: .5rem;
+    }
+
+    /* ── Section header ── */
+    .section-header {
+      font-size: .78rem;
+      text-transform: uppercase;
+      letter-spacing: .08em;
+      color: #6c757d;
+      margin: 1.75rem 0 1rem;
+      font-weight: 600;
+    }
+  </style>
+</head>
+<body>
+
+<!-- ─── Sidebar ─── -->
+<nav class="sidebar">
+  <a href="/" class="brand">
+    <i class="bi bi-broadcast-pin"></i> Sky Engineering
+  </a>
+
+  <span class="nav-section">Main</span>
+  <a href="/teams/"        class="nav-link"><i class="bi bi-people"></i> Teams</a>
+  <a href="/departments/"  class="nav-link"><i class="bi bi-diagram-3"></i> Departments</a>
+  <a href="/organisation/" class="nav-link"><i class="bi bi-building"></i> Organisation</a>
+  <a href="{% url 'messaging:inbox' %}" class="nav-link"><i class="bi bi-chat-dots"></i> Messages</a>
+
+  <span class="nav-section">Schedule</span>
+  <a href="{% url 'schedule:home' %}"    class="nav-link"><i class="bi bi-calendar2-check"></i> Upcoming</a>
+  <a href="{% url 'schedule:weekly' %}"  class="nav-link"><i class="bi bi-calendar3-week"></i> Weekly</a>
+  <a href="{% url 'schedule:monthly' %}" class="nav-link"><i class="bi bi-calendar3"></i> Monthly</a>
+  <a href="{% url 'schedule:create' %}"  class="nav-link"><i class="bi bi-plus-circle"></i> New Meeting</a>
+
+  <span class="nav-section">Analytics</span>
+  <a href="{% url 'visualisations:dashboard' %}" class="nav-link active">
+    <i class="bi bi-bar-chart-line"></i> Visualisations
+  </a>
+
+  <span class="nav-section">Reports</span>
+  <a href="/reports/" class="nav-link"><i class="bi bi-file-earmark-bar-graph"></i> Reports</a>
+
+  <div class="mt-auto p-3">
+    <a href="/accounts/logout/" class="btn btn-sm btn-outline-light w-100">
+      <i class="bi bi-box-arrow-right"></i> Logout
+    </a>
+  </div>
+</nav>
+
+<!-- ─── Main content ─── -->
+<div class="main-content">
+
+  <!-- Top Bar -->
+  <div class="top-bar">
+    <h1><i class="bi bi-bar-chart-line me-2" style="color:var(--sky-blue)"></i>Data Visualisation</h1>
+    <span class="text-muted" style="font-size:.88rem">
+      <i class="bi bi-clock me-1"></i> Live data · refreshed on load
+    </span>
+  </div>
+
+  <!-- ── KPI Summary Row ── -->
+  <p class="section-header">Overview</p>
+  <div class="row g-3 mb-2">
+    <div class="col-md-4 col-lg-2">
+      <div class="kpi-card">
+        <div class="kpi-icon blue"><i class="bi bi-calendar2-check"></i></div>
+        <div>
+          <div class="kpi-value">{{ total_meetings }}</div>
+          <div class="kpi-label">Total meetings</div>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-4 col-lg-2">
+      <div class="kpi-card">
+        <div class="kpi-icon green"><i class="bi bi-calendar-event"></i></div>
+        <div>
+          <div class="kpi-value">{{ upcoming_count }}</div>
+          <div class="kpi-label">Upcoming</div>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-4 col-lg-2">
+      <div class="kpi-card">
+        <div class="kpi-icon blue"><i class="bi bi-envelope"></i></div>
+        <div>
+          <div class="kpi-value">{{ total_messages }}</div>
+          <div class="kpi-label">Messages sent</div>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-4 col-lg-2">
+      <div class="kpi-card">
+        <div class="kpi-icon orange"><i class="bi bi-envelope-open"></i></div>
+        <div>
+          <div class="kpi-value">{{ unread_messages }}</div>
+          <div class="kpi-label">Unread (you)</div>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-4 col-lg-2">
+      <div class="kpi-card">
+        <div class="kpi-icon dark"><i class="bi bi-people"></i></div>
+        <div>
+          <div class="kpi-value">{{ total_users }}</div>
+          <div class="kpi-label">Registered users</div>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-4 col-lg-2">
+      <div class="kpi-card">
+        <div class="kpi-icon dark"><i class="bi bi-file-earmark-text"></i></div>
+        <div>
+          <div class="kpi-value">{{ draft_messages }}</div>
+          <div class="kpi-label">Your drafts</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Row 1: Meetings by Platform + Meeting Status ── -->
+  <p class="section-header">Meeting Analytics</p>
+  <div class="row g-3">
+    <div class="col-lg-7">
+      <div class="chart-card">
+        <div class="chart-card-title">
+          <i class="bi bi-bar-chart"></i> Meetings by Platform
+        </div>
+        <div class="chart-wrapper">
+          <div class="chart-loading" id="loading-platform">
+            <div class="spinner-border spinner-border-sm text-secondary" role="status"></div>
+            <span>Loading…</span>
+          </div>
+          <canvas id="chartPlatform" style="display:none" height="260"></canvas>
+        </div>
+      </div>
+    </div>
+    <div class="col-lg-5">
+      <div class="chart-card">
+        <div class="chart-card-title">
+          <i class="bi bi-pie-chart"></i> Meeting Status Distribution
+        </div>
+        <div class="chart-wrapper">
+          <div class="chart-loading" id="loading-status">
+            <div class="spinner-border spinner-border-sm text-secondary" role="status"></div>
+            <span>Loading…</span>
+          </div>
+          <canvas id="chartStatus" style="display:none" height="260"></canvas>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Row 2: Meetings Over Time + Top Organisers ── -->
+  <div class="row g-3 mt-1">
+    <div class="col-lg-7">
+      <div class="chart-card">
+        <div class="chart-card-title">
+          <i class="bi bi-graph-up"></i> Meetings Scheduled – Last 6 Months
+        </div>
+        <div class="chart-wrapper">
+          <div class="chart-loading" id="loading-time">
+            <div class="spinner-border spinner-border-sm text-secondary" role="status"></div>
+            <span>Loading…</span>
+          </div>
+          <canvas id="chartTime" style="display:none" height="260"></canvas>
+        </div>
+      </div>
+    </div>
+    <div class="col-lg-5">
+      <div class="chart-card">
+        <div class="chart-card-title">
+          <i class="bi bi-person-badge"></i> Top Meeting Organisers
+        </div>
+        <div class="chart-wrapper">
+          <div class="chart-loading" id="loading-organisers">
+            <div class="spinner-border spinner-border-sm text-secondary" role="status"></div>
+            <span>Loading…</span>
+          </div>
+          <canvas id="chartOrganisers" style="display:none" height="260"></canvas>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Row 3: Platform Trend (stacked) ── -->
+  <div class="row g-3 mt-1">
+    <div class="col-12">
+      <div class="chart-card">
+        <div class="chart-card-title">
+          <i class="bi bi-layers"></i> Platform Usage Trend – Last 4 Months
+        </div>
+        <div class="chart-wrapper">
+          <div class="chart-loading" id="loading-trend">
+            <div class="spinner-border spinner-border-sm text-secondary" role="status"></div>
+            <span>Loading…</span>
+          </div>
+          <canvas id="chartTrend" style="display:none" height="160"></canvas>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Row 4: Messaging Analytics ── -->
+  <p class="section-header">Messaging Analytics</p>
+  <div class="row g-3">
+    <div class="col-lg-6">
+      <div class="chart-card">
+        <div class="chart-card-title">
+          <i class="bi bi-graph-up-arrow"></i> Messages Sent – Last 6 Months
+        </div>
+        <div class="chart-wrapper">
+          <div class="chart-loading" id="loading-msg-time">
+            <div class="spinner-border spinner-border-sm text-secondary" role="status"></div>
+            <span>Loading…</span>
+          </div>
+          <canvas id="chartMsgTime" style="display:none" height="260"></canvas>
+        </div>
+      </div>
+    </div>
+    <div class="col-lg-6">
+      <div class="chart-card">
+        <div class="chart-card-title">
+          <i class="bi bi-person-lines-fill"></i> Most Active Senders
+        </div>
+        <div class="chart-wrapper">
+          <div class="chart-loading" id="loading-msg-user">
+            <div class="spinner-border spinner-border-sm text-secondary" role="status"></div>
+            <span>Loading…</span>
+          </div>
+          <canvas id="chartMsgUser" style="display:none" height="260"></canvas>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="mt-4 text-muted" style="font-size:.8rem; text-align:right;">
+    Student 6 – Data Visualisation module &nbsp;|&nbsp; Sky Engineering Portal
+  </div>
+
+</div><!-- /main-content -->
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+/**
+ * Utility: fetch JSON from a URL, hide spinner, show canvas, render Chart.js chart.
+ */
+async function loadChart(url, canvasId, loadingId, type, options = {}) {
+  const canvas  = document.getElementById(canvasId);
+  const loading = document.getElementById(loadingId);
+  try {
+    const res  = await fetch(url, { headers: { 'X-Requested-With': 'XMLHttpRequest' } });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const data = await res.json();
+
+    loading.style.display = 'none';
+    canvas.style.display  = 'block';
+
+    new Chart(canvas, {
+      type,
+      data,
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: { position: 'bottom', labels: { boxWidth: 12, font: { size: 12 } } },
+          tooltip: { mode: 'index', intersect: false },
+        },
+        ...options,
+      }
+    });
+  } catch (err) {
+    loading.innerHTML = `<span class="text-danger"><i class="bi bi-exclamation-triangle me-1"></i>Could not load chart</span>`;
+    console.error(canvasId, err);
+  }
+}
+
+// ── Chart.js global defaults ──────────────────────────────────────────────────
+Chart.defaults.font.family = "'Segoe UI', sans-serif";
+Chart.defaults.color       = '#6c757d';
+
+// ── Meetings by Platform (vertical bar) ─────────────────────────────────────
+loadChart(
+  "{% url 'visualisations:api_meetings_by_platform' %}",
+  'chartPlatform', 'loading-platform', 'bar',
+  { scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } } }
+);
+
+// ── Meeting Status (doughnut) ────────────────────────────────────────────────
+loadChart(
+  "{% url 'visualisations:api_meetings_by_status' %}",
+  'chartStatus', 'loading-status', 'doughnut',
+  { cutout: '60%' }
+);
+
+// ── Meetings Over Time (line) ────────────────────────────────────────────────
+loadChart(
+  "{% url 'visualisations:api_meetings_over_time' %}",
+  'chartTime', 'loading-time', 'line',
+  { scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } } }
+);
+
+// ── Top Organisers (horizontal bar) ─────────────────────────────────────────
+loadChart(
+  "{% url 'visualisations:api_top_organisers' %}",
+  'chartOrganisers', 'loading-organisers', 'bar',
+  {
+    indexAxis: 'y',
+    scales: { x: { beginAtZero: true, ticks: { stepSize: 1 } } },
+    plugins: { legend: { display: false } }
+  }
+);
+
+// ── Platform Trend (stacked bar) ────────────────────────────────────────────
+loadChart(
+  "{% url 'visualisations:api_platform_trend' %}",
+  'chartTrend', 'loading-trend', 'bar',
+  {
+    scales: {
+      x: { stacked: true },
+      y: { stacked: true, beginAtZero: true, ticks: { stepSize: 1 } }
+    }
+  }
+);
+
+// ── Messages Over Time (line) ────────────────────────────────────────────────
+loadChart(
+  "{% url 'visualisations:api_messages_over_time' %}",
+  'chartMsgTime', 'loading-msg-time', 'line',
+  { scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } } }
+);
+
+// ── Most Active Senders (bar) ────────────────────────────────────────────────
+loadChart(
+  "{% url 'visualisations:api_messages_by_user' %}",
+  'chartMsgUser', 'loading-msg-user', 'bar',
+  {
+    scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } },
+    plugins: { legend: { display: false } }
+  }
+);
+</script>
+</body>
+</html>

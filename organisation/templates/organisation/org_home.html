@@ -1,0 +1,64 @@
+{% extends 'organisation/base_organisation.html' %}
+{% block title %}Organisation{% endblock %}
+{% block content %}
+
+<div class="top-bar">
+    <h1><i class="bi bi-building me-2" style="color:var(--sky-blue)"></i>Organisation Overview</h1>
+</div>
+
+<div class="mb-4">
+    <form method="GET" action="/organisation/" class="d-flex gap-2" style="max-width:500px">
+        <input type="text" name="q" value="{{ query }}" placeholder="Search departments or teams..." class="form-control rounded-pill px-4">
+        <button type="submit" class="btn btn-primary rounded-pill px-4">Search</button>
+    </form>
+</div>
+
+{% if query %}
+<h5 class="fw-bold mb-3">Departments matching "{{ query }}"</h5>
+<div class="row g-4 mb-4">
+    {% for department in departments %}
+    <div class="col-md-4">
+        <div class="card h-100 p-4">
+            <h5 class="fw-bold">{{ department.name }}</h5>
+            <p class="text-muted small">{{ department.specialisation }}</p>
+            <a href="/organisation/department/{{ department.pk }}/" class="btn btn-primary mt-3 w-100">View Department →</a>
+        </div>
+    </div>
+    {% empty %}
+    <p class="text-muted">No departments found.</p>
+    {% endfor %}
+</div>
+<h5 class="fw-bold mb-3">Teams matching "{{ query }}"</h5>
+<div class="row g-4">
+    {% for team in teams %}
+    <div class="col-md-4">
+        <div class="card h-100 p-4">
+            <h5 class="fw-bold">{{ team.name }}</h5>
+            <p class="text-muted small">{{ team.department }}</p>
+            <a href="/organisation/team/{{ team.pk }}/" class="btn btn-primary mt-3 w-100">View Team →</a>
+        </div>
+    </div>
+    {% empty %}
+    <p class="text-muted">No teams found.</p>
+    {% endfor %}
+</div>
+{% else %}
+<h5 class="fw-bold mb-3">All Departments</h5>
+<div class="row g-4">
+    {% for department in departments %}
+    <div class="col-md-4">
+        <div class="card h-100 p-4">
+            <span class="badge mb-2" style="background:#e8f0fe;color:#1b4f72;">Engineering</span>
+            <h5 class="fw-bold">{{ department.name }}</h5>
+            <p class="text-muted small">{{ department.specialisation }}</p>
+            {% if department.leader %}
+            <p class="small text-secondary">👤 {{ department.leader }}</p>
+            {% endif %}
+            <a href="/organisation/department/{{ department.pk }}/" class="btn btn-primary mt-3 w-100">View Department →</a>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% endif %}
+
+{% endblock %}

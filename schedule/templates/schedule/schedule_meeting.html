@@ -1,0 +1,117 @@
+{% extends 'schedule/base_schedule.html' %}
+{% block title %}{{ title }}{% endblock %}
+
+{% block content %}
+<div class="top-bar">
+  <h1>
+    <i class="bi bi-calendar-plus me-2" style="color:var(--sky-blue)"></i>{{ title }}
+  </h1>
+  <a href="{% url 'schedule:home' %}" class="btn btn-outline-secondary btn-sm">
+    <i class="bi bi-arrow-left me-1"></i> Back
+  </a>
+</div>
+
+<div class="row justify-content-center">
+  <div class="col-lg-8">
+    <div class="card">
+      <div class="card-header">
+        {% if mode == 'edit' %}
+          Editing: <em>{{ meeting.title }}</em>
+        {% else %}
+          Fill in the details below to schedule a new meeting
+        {% endif %}
+      </div>
+      <div class="card-body p-4">
+        <form method="post" novalidate>
+          {% csrf_token %}
+          {% if form.errors %}
+  <div class="alert alert-danger">
+    {% for field, errors in form.errors.items %}
+      <strong>{{ field }}:</strong> {{ errors|join:", " }}<br>
+    {% endfor %}
+  </div>
+{% endif %}
+
+          <!-- Title -->
+          <div class="mb-3">
+            <label class="form-label fw-semibold">Meeting Title <span class="text-danger">*</span></label>
+            {{ form.title }}
+            {% if form.title.errors %}
+              <div class="text-danger small mt-1">{{ form.title.errors.0 }}</div>
+            {% endif %}
+          </div>
+
+          <!-- Date/Time + Duration -->
+          <div class="row g-3 mb-3">
+            <div class="col-md-7">
+              <label class="form-label fw-semibold">Date & Time <span class="text-danger">*</span></label>
+              {{ form.date_time }}
+              {% if form.date_time.errors %}
+                <div class="text-danger small mt-1">{{ form.date_time.errors.0 }}</div>
+              {% endif %}
+            </div>
+            <div class="col-md-5">
+              <label class="form-label fw-semibold">Duration (minutes)</label>
+              {{ form.duration }}
+            </div>
+          </div>
+
+          <!-- Platform + Meeting Link -->
+          <div class="row g-3 mb-3">
+            <div class="col-md-5">
+              <label class="form-label fw-semibold">Platform</label>
+              {{ form.platform }}
+            </div>
+            <div class="col-md-7">
+              <label class="form-label fw-semibold">Meeting Link</label>
+              {{ form.meeting_link }}
+              <div class="form-text">Zoom / Teams / Meet URL (optional for in-person)</div>
+            </div>
+          </div>
+
+          <!-- Attendees -->
+          <div class="mb-3">
+            <label class="form-label fw-semibold">Attendees</label>
+            {{ form.attendees }}
+            <div class="form-text">Hold Ctrl / Cmd to select multiple attendees.</div>
+          </div>
+
+          <!-- Agenda / Message -->
+          <div class="mb-3">
+            <label class="form-label fw-semibold">Agenda / Message</label>
+            {{ form.agenda }}
+          </div>
+
+          <!-- Status -->
+          <div class="mb-3">
+            <label class="form-label fw-semibold">Status</label>
+            {{ form.status }}
+          </div>
+
+          <!-- Status (edit only) -->
+          {% if mode == 'edit' %}
+          <div class="mb-3">
+            <label class="form-label fw-semibold">Status</label>
+            {{ form.status }}
+          </div>
+          {% endif %}
+
+          <!-- Non-field errors -->
+          {% if form.non_field_errors %}
+            <div class="alert alert-danger">{{ form.non_field_errors }}</div>
+          {% endif %}
+
+          <hr>
+          <div class="d-flex gap-2">
+            <button type="submit" class="btn btn-primary">
+              <i class="bi bi-check-lg me-1"></i>
+              {% if mode == 'edit' %}Save Changes{% else %}Schedule Meeting{% endif %}
+            </button>
+            <a href="{% url 'schedule:home' %}" class="btn btn-outline-secondary">Cancel</a>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

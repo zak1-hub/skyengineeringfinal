@@ -1,0 +1,215 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}Messages{% endblock %} | Sky Engineering</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+  <style>
+    :root {
+      --sky-blue:   #00b5e2;
+      --sky-dark:   #003057;
+      --sky-light:  #e8f7fc;
+      --sidebar-w:  240px;
+    }
+
+    body { background: #f4f6f9; font-family: 'Segoe UI', sans-serif; }
+
+    /* ── Sidebar ── */
+    .sidebar {
+      width: var(--sidebar-w);
+      min-height: 100vh;
+      background: var(--sky-dark);
+      color: #fff;
+      position: fixed;
+      top: 0; left: 0;
+      display: flex;
+      flex-direction: column;
+      z-index: 100;
+    }
+    .sidebar .brand {
+      padding: 1.25rem 1.5rem;
+      font-size: 1.1rem;
+      font-weight: 700;
+      border-bottom: 1px solid rgba(255,255,255,.15);
+      display: flex;
+      align-items: center;
+      gap: .6rem;
+      color: var(--sky-blue);
+      text-decoration: none;
+    }
+    .sidebar .nav-link {
+      color: rgba(255,255,255,.8);
+      padding: .65rem 1.5rem;
+      font-size: .93rem;
+      display: flex;
+      align-items: center;
+      gap: .6rem;
+      transition: background .15s, color .15s;
+      border-left: 3px solid transparent;
+    }
+    .sidebar .nav-link:hover,
+    .sidebar .nav-link.active {
+      background: rgba(255,255,255,.08);
+      color: #fff;
+      border-left-color: var(--sky-blue);
+    }
+    .sidebar .nav-section {
+      font-size: .72rem;
+      text-transform: uppercase;
+      letter-spacing: .08em;
+      color: rgba(255,255,255,.4);
+      padding: 1rem 1.5rem .3rem;
+    }
+
+    /* ── Main content ── */
+    .main-content {
+      margin-left: var(--sidebar-w);
+      padding: 2rem;
+      min-height: 100vh;
+    }
+
+    /* ── Top bar ── */
+    .top-bar {
+      background: #fff;
+      border-radius: 12px;
+      padding: .85rem 1.5rem;
+      margin-bottom: 1.75rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      box-shadow: 0 1px 4px rgba(0,0,0,.07);
+    }
+    .top-bar h1 { font-size: 1.35rem; font-weight: 700; color: var(--sky-dark); margin: 0; }
+
+    /* ── Cards ── */
+    .card {
+      border: none;
+      border-radius: 12px;
+      box-shadow: 0 1px 6px rgba(0,0,0,.08);
+    }
+    .card-header {
+      background: #fff;
+      border-bottom: 2px solid var(--sky-blue);
+      border-radius: 12px 12px 0 0 !important;
+      font-weight: 600;
+      color: var(--sky-dark);
+    }
+
+    /* ── Message row styles ── */
+    .msg-row {
+      cursor: pointer;
+      transition: background .1s;
+    }
+    .msg-row:hover { background: var(--sky-light) !important; }
+    .msg-row.unread td { font-weight: 600; }
+    .msg-row.unread .msg-subject { color: var(--sky-dark); }
+
+    /* ── Tab nav ── */
+    .btn-sky        { background:#fff; border:1px solid var(--sky-blue); color:var(--sky-dark); }
+    .btn-sky.active { background:var(--sky-blue); color:#fff; }
+    .btn-sky:hover  { background:var(--sky-blue); color:#fff; }
+
+    /* ── Badge unread ── */
+    .unread-badge {
+      background: var(--sky-blue);
+      color: #fff;
+      border-radius: 10px;
+      font-size: .7rem;
+      padding: 1px 7px;
+      margin-left: 4px;
+    }
+
+    /* ── Message body card ── */
+    .message-body {
+      background: #fff;
+      border-radius: 8px;
+      padding: 1.5rem;
+      border: 1px solid #e3e6ea;
+      white-space: pre-wrap;
+      line-height: 1.7;
+    }
+
+    /* ── Thread item ── */
+    .thread-item {
+      border-left: 3px solid var(--sky-blue);
+      padding-left: 1rem;
+      margin-bottom: 1rem;
+    }
+    .thread-item.current { border-left-color: var(--sky-dark); }
+  </style>
+  {% block extra_css %}{% endblock %}
+</head>
+<body>
+
+<!-- ─── Sidebar ─── -->
+<nav class="sidebar">
+  <a href="/" class="brand">
+    <i class="bi bi-broadcast-pin"></i> Sky Engineering
+  </a>
+
+  <span class="nav-section">Main</span>
+  <a href="/teams/"        class="nav-link"><i class="bi bi-people"></i> Teams</a>
+  <a href="/departments/"  class="nav-link"><i class="bi bi-diagram-3"></i> Departments</a>
+  <a href="/organisation/" class="nav-link"><i class="bi bi-building"></i> Organisation</a>
+  <a href="/messages/"     class="nav-link active">
+    <i class="bi bi-chat-dots"></i> Messages
+    {% if unread_count %}
+      <span class="unread-badge ms-auto">{{ unread_count }}</span>
+    {% endif %}
+  </a>
+
+  <span class="nav-section">Messages</span>
+  <a href="{% url 'messaging:inbox' %}"   class="nav-link {% if active_tab == 'inbox' %}active{% endif %}">
+    <i class="bi bi-inbox"></i> Inbox
+    {% if unread_count %}
+      <span class="unread-badge ms-auto">{{ unread_count }}</span>
+    {% endif %}
+  </a>
+  <a href="{% url 'messaging:compose' %}" class="nav-link {% if active_tab == 'compose' %}active{% endif %}">
+    <i class="bi bi-pencil-square"></i> New Message
+  </a>
+  <a href="{% url 'messaging:sent' %}"    class="nav-link {% if active_tab == 'sent' %}active{% endif %}">
+    <i class="bi bi-send"></i> Sent
+  </a>
+  <a href="{% url 'messaging:drafts' %}"  class="nav-link {% if active_tab == 'drafts' %}active{% endif %}">
+    <i class="bi bi-file-earmark-text"></i> Drafts
+  </a>
+
+  <span class="nav-section">Schedule</span>
+  <a href="/schedule/"         class="nav-link"><i class="bi bi-calendar2-check"></i> Upcoming</a>
+  <a href="/schedule/weekly/"  class="nav-link"><i class="bi bi-calendar3-week"></i> Weekly</a>
+  <a href="/schedule/monthly/" class="nav-link"><i class="bi bi-calendar3"></i> Monthly</a>
+  <a href="/schedule/new/"     class="nav-link"><i class="bi bi-plus-circle"></i> New Meeting</a>
+
+  <span class="nav-section">Reports</span>
+  <a href="/reports/" class="nav-link"><i class="bi bi-file-earmark-bar-graph"></i> Reports</a>
+
+  <div class="mt-auto p-3">
+    <a href="/accounts/logout/" class="btn btn-sm btn-outline-light w-100">
+      <i class="bi bi-box-arrow-right"></i> Logout
+    </a>
+  </div>
+</nav>
+
+<!-- ─── Main content ─── -->
+<div class="main-content">
+
+  {% if messages %}
+    {% for msg in messages %}
+      <div class="alert alert-{{ msg.tags }} alert-dismissible fade show" role="alert">
+        {{ msg }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+      </div>
+    {% endfor %}
+  {% endif %}
+
+  {% block content %}{% endblock %}
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+{% block extra_js %}{% endblock %}
+</body>
+</html>

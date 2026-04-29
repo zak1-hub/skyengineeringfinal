@@ -1,0 +1,36 @@
+{% extends 'organisation/base_organisation.html' %}
+{% block title %}All Teams{% endblock %}
+{% block content %}
+
+<div class="top-bar">
+    <h1><i class="bi bi-people me-2" style="color:var(--sky-blue)"></i>All Teams</h1>
+    <span class="badge bg-primary">{{ teams.count }} Teams</span>
+</div>
+
+<div class="mb-4">
+    <form method="GET" action="/organisation/teams/" class="d-flex gap-2" style="max-width:500px">
+        <input type="text" name="q" value="{{ query }}" placeholder="Search teams..." class="form-control rounded-pill px-4">
+        <button type="submit" class="btn btn-primary rounded-pill px-4">Search</button>
+    </form>
+</div>
+
+{% if query %}
+<h5 class="fw-bold mb-3">Results for "{{ query }}"</h5>
+{% endif %}
+
+<div class="row g-4">
+    {% for team in teams %}
+    <div class="col-md-4">
+        <div class="card h-100 p-4">
+            <h5 class="fw-bold">{{ team.name }}</h5>
+            <p class="text-muted small">{{ team.department }}</p>
+            <p class="text-muted small">{{ team.mission|default:"No mission statement yet." }}</p>
+            <a href="/organisation/team/{{ team.pk }}/" class="btn btn-primary mt-3 w-100">View Team →</a>
+        </div>
+    </div>
+    {% empty %}
+    <p class="text-muted">No teams found.</p>
+    {% endfor %}
+</div>
+
+{% endblock %}
