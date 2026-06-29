@@ -4,8 +4,6 @@ A web application built for Sky's Engineering Department to replace their intern
 
 Built with Django and SQLite as part of a university group project.
 
----
-
 ## What it does
 
 - **Teams** — browse all engineering teams, see who's in them, what they do, and how they depend on each other
@@ -15,7 +13,10 @@ Built with Django and SQLite as part of a university group project.
 - **Reports** — generate summaries of teams and departments
 - **Django Admin** — full admin panel for managing everything behind the scenes
 
----
+## My contribution
+
+This was a group project of six students. My individual responsibility was the meeting schedule component, which I designed and implemented end to end — Menu Item- Schedule
+Schedule Meeting page , Data time, Platform , message , monthly , weekly and upcoming schedules.
 
 ## Tech stack
 
@@ -25,23 +26,19 @@ Built with Django and SQLite as part of a university group project.
 - Bootstrap 5.3
 - Bootstrap Icons
 
----
-
 ## Getting it running
 
 **1. Clone the repo**
 ```bash
-git clone https://github.com/serge-yetimian/skyengineering.git
-cd skyengineering
+git clone https://github.com/zak1-hub/skyengineeringfinal.git
+cd skyengineeringfinal
 ```
 
 **2. Create and activate a virtual environment**
 ```bash
 python -m venv venv
-
 # Windows
 venv\Scripts\activate
-
 # Mac/Linux
 source venv/bin/activate
 ```
@@ -66,38 +63,32 @@ python manage.py createsuperuser
 python manage.py runserver
 ```
 
-Then open http://127.0.0.1:8000 in your browser.
-
----
+Then open `http://127.0.0.1:8000` in your browser.
 
 ## Project structure
 
 ```
-skyengineering-main/
-├── messaging/        # Student 3 — internal messaging system
-├── schedule/         # Student 4 — meeting scheduler
+skyengineeringfinal/
+├── messaging/        # Internal messaging system
+├── schedule/         # Meeting scheduler
 ├── skyengineering/   # Django project settings and URLs
 ├── manage.py
 ├── requirements.txt
 └── db.sqlite3
 ```
 
----
-
 ## The team
 
-This was built as a group project for 5COSC021W Software Development Group Project at the University of Westminster. Each team member was responsible for a different part of the application.
+This was built as a group project for **5COSC021W Software Development Group Project** at the University of Westminster. Each team member was responsible for a different part of the application:
 
-| Student | Feature |
-|---------|---------|
-| Student 1 | Teams |
-| Student 2 | Organisation & Departments |
-| Student 3 | Messaging |
-| Student 4 | Schedule |
-| Student 5 | Reports |
-| Student 6 | Data Visualisation |
-
----
+| Feature | Owner |
+|---|---|
+| Teams | Student 1 |
+| Organisation & Departments | Student 2 |
+| Messaging | Student 3 |
+| Schedule | Student 4 |
+| Reports | Student 5 |
+| Data Visualisation | Student 6 |
 
 ## Notes
 
